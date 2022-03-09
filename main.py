@@ -1,13 +1,13 @@
 from Labki1 import Zagadka, Solution
+from ToolBox import graph_from_edges
+from Zadanie1 import *
 
-# Press the green button in the gutter to run the script.
+
 if __name__ == '__main__':
-    A = Zagadka(26)
-    print(A.to_string())
+    graph = graph_from_edges('data/Arxiv_GR_collab_network.txt',
+                             directed=True, drop_rows=4)
+    population = Population(5, graph)
+    # print([m.members for m in population.list])
+    print([m.members for m in population.cross_all()])
 
-    print(A.basic_compare([17, 7, 14, 1]))
 
-    B = Solution()
-    B.local_search(A)
-
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
