@@ -41,6 +41,7 @@ class Population:
 
     def update_population(self):
         """Wykonujemy iteracje, czyli rozmnzazamy i ewaloujemy nasza populacje"""
+        #TODO nie krzyzowac wszystkich!
         kids = self.cross_all()
         new_population = self.list + kids
         new_population.sort(key=lambda x: x.weight, reverse=True)
@@ -67,11 +68,12 @@ class Group:
     def evaluate(self, cooperation):
         """Liczymy ile jest osob w grupie a potem odejmujemy punkty za kazda
         osobe ktora wspolpracowala z kims z grupy"""
+        #TODO zrobić mądzrej to przeszukiwanie
         temp_members = self.members.copy()
         for member1 in temp_members:
             for member2 in temp_members:
                 if member1 != member2 and member1 in cooperation[member2]:
-                    self.members.remove(member1) # wypierdalamy ludzi jesli ze soba pracowali
+                    self.members.remove(member1) #wyrzucamy ludzi jesli ze soba pracowali
                     break
         weight = len(self.members)
         self.group_size = weight
@@ -89,7 +91,13 @@ class Group:
         self.members = set(temp)
 
     def is_group_admissible(self):
+        #TODO usunac te funkcje
         if self.group_size == self.weight:
             return True
         else:
             return False
+
+
+class Ils:
+    def __init__(self, cooperation_graph):
+        pass

@@ -6,7 +6,7 @@ from Zadanie1 import *
 if __name__ == '__main__':
     graph = graph_from_edges('data/Arxiv_GR_collab_network.txt',
                              directed=True, drop_rows=4)
-    population = Population(20, graph)
+    population = Population(30, graph)
 
     best_weight = 0
     flag = 0
