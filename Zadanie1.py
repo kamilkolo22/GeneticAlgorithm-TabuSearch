@@ -1,4 +1,6 @@
 import random
+import time
+
 import numpy as np
 
 
@@ -26,23 +28,23 @@ class Population:
                       members=set.union(set1, set2))
         return child
 
-    def cross_all(self):
+    def cross_all(self, cross_p):
         """Skrzyzowanie wszystkich osobnikow"""
         random.shuffle(self.list)
-        N = len(self.list)
+        to_cross = self.list[:int(len(self.list)*cross_p)]
+        N = len(to_cross)
         children = []
         if N % 2 == 0:
-            for parent1, parent2 in zip(self.list[:int(N/2)], self.list[int(N/2):]):
+            for parent1, parent2 in zip(to_cross[:int(N/2)], to_cross[int(N/2):]):
                 children.append(self.cross(parent1, parent2))
         else:
-            for parent1, parent2 in zip(self.list[:int((N-1)/2)], self.list[int((N-1)/2):-1]):
+            for parent1, parent2 in zip(to_cross[:int((N-1)/2)], to_cross[int((N-1)/2):-1]):
                 children.append(self.cross(parent1, parent2))
         return children
 
-    def update_population(self):
+    def update_population(self, cross_p=1):
         """Wykonujemy iteracje, czyli rozmnzazamy i ewaloujemy nasza populacje"""
-        #TODO nie krzyzowac wszystkich!
-        kids = self.cross_all()
+        kids = self.cross_all(cross_p)
         new_population = self.list + kids
         new_population.sort(key=lambda x: x.weight, reverse=True)
         self.list = new_population[:self.population_size]
@@ -53,7 +55,8 @@ class Group:
     """Klasa Group przechowuje liste id czonkow grupy araz posiada metody do
     ewaluacji i mutacji grupy"""
 
-    def __init__(self, cooperation_graph, group_size=None, members=None):
+    def __init__(self, cooperation_graph, group_size=None, members=None,
+                 mutation_frequency=0.1):
         available_id = set(cooperation_graph.keys())
         if members is None:
             self.members = random.sample(available_id, group_size)
@@ -62,26 +65,30 @@ class Group:
         elif group_size is None:
             self.members = members
             self.group_size = len(members)
-            self.mutate(available_id)
+            self.mutate(available_id, mutation_frequency)
             self.weight = self.evaluate(cooperation_graph)
 
     def evaluate(self, cooperation):
         """Liczymy ile jest osob w grupie a potem odejmujemy punkty za kazda
         osobe ktora wspolpracowala z kims z grupy"""
-        #TODO zrobić mądzrej to przeszukiwanie
-        temp_members = self.members.copy()
-        for member1 in temp_members:
-            for member2 in temp_members:
-                if member1 != member2 and member1 in cooperation[member2]:
-                    self.members.remove(member1) #wyrzucamy ludzi jesli ze soba pracowali
-                    break
+        # temp_members = self.members.copy()
+        # for member1 in temp_members:
+        #     for member2 in temp_members:
+        #         if member1 in cooperation[member2] and member1 != member2:
+        #             self.members.remove(member1) #wyrzucamy ludzi jesli ze soba pracowali
+        #             break
+        temp = {x: y for x, y in cooperation.items() if x in self.members}
+        not_allowed = set().union(*temp.values())
+        for m in not_allowed:
+            if m in self.members:
+                self.members.remove(m)
+
         weight = len(self.members)
         self.group_size = weight
         return weight
 
-    def mutate(self, available_id):
+    def mutate(self, available_id, p=0.1):
         """Tworzymy losowe mutacje w grupie z prawdopodobienstwem p"""
-        p = 0.1
         N = int(self.group_size * p)
         indexes = random.sample(range(self.group_size), N)
         new_gens = random.sample(available_id, N)
@@ -90,14 +97,14 @@ class Group:
             temp[x] = y
         self.members = set(temp)
 
-    def is_group_admissible(self):
-        #TODO usunac te funkcje
-        if self.group_size == self.weight:
-            return True
-        else:
-            return False
+###############################################################################
+# Zadanie 1 czesc B
+class City:
+    def __init__(self, graph):
+        self.vertexes = list(graph.keys())
+        self.graph = graph
+        self.cover = graph
 
-
-class Ils:
-    def __init__(self, cooperation_graph):
-        pass
+    def check_cover(self):
+        seen_vertexes = set().union(*self.cover.values())
+        return seen_vertexes

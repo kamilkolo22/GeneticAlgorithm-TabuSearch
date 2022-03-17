@@ -94,8 +94,8 @@ class Solution:
         print("Rozwiązanie znalezione po ", liczba_iteracji, " iteracjach")
 
 class Population(Solution):
-    def __init__(self, number):
-        super(Population, self).__init__()
+    def __init__(self, number, randomly=True, lista_n_elementowa=[]):
+        super(Population, self).__init__(randomly, lista_n_elementowa)
 
     def cross(self, parent1, parent2):
         child = parent1[:N//2] + parent2[N//2:]
