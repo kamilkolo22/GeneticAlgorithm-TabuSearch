@@ -31,11 +31,9 @@ def start_problem_A():
 
 
 if __name__ == '__main__':
-    start_problem_A()
-    # graph = graph_from_edges('data/roadNet_USRoads.txt', drop_rows=16)
+    # start_problem_A()
+    graph = graph_from_edges('data/roadNet_USRoads.txt', drop_rows=16)
+    # print(len(graph))
     #
-    # city = City(graph)
-    # time_start = time()
-    # city.check_cover()
-    # print(f"{time() - time_start}")
-
+    city = City(graph, 100)
+    print(f'Problem solved, found cover with {len(city.start_searching(stop_time=30))} vertexes')

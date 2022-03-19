@@ -1,5 +1,8 @@
 import random
 import time
+from queue import SimpleQueue
+from copy import deepcopy
+from collections import deque
 
 import numpy as np
 
@@ -97,14 +100,75 @@ class Group:
             temp[x] = y
         self.members = set(temp)
 
+
 ###############################################################################
 # Zadanie 1 czesc B
 class City:
-    def __init__(self, graph):
+    def __init__(self, graph, max_qsize):
         self.vertexes = list(graph.keys())
-        self.graph = graph
-        self.cover = graph
+        self.general_graph = graph
+        self.current_cover = graph
+        self.number_vertexes = len(graph)
+        self.max_qsize = max_qsize
+        self.tabu_list = deque()
+        self.tabu_list.appendleft(set(graph.keys()))
 
-    def check_cover(self):
-        seen_vertexes = set().union(*self.cover.values())
-        return seen_vertexes
+    def start_searching(self, stop_time):
+        time_start = time.time()
+        i = 0
+        while True:
+            self.get_better_neighbour()
+            i += 1
+            if (time.time() - time_start) > stop_time:
+                break
+        print(f'Number of interations: {i}')
+        return self.current_cover
+
+    def check_cover(self, graph):
+        seen_vertexes = set().union(*graph.values())
+        return len(seen_vertexes) == self.number_vertexes
+
+    def get_better_neighbour(self):
+        new_cover = None
+        for i in range(self.number_vertexes):
+            v_from = random.sample(self.current_cover.keys(), 1)[0]
+            v_to = random.sample(self.general_graph[v_from], 1)[0]
+            if self.check_move_possibility(v_from, v_to):
+                new_cover = self.move_vertex(self.current_cover, v_from, v_to)
+                break
+        else:
+            print('Nie znaleziono możliwego ruchu')
+
+        if new_cover is not None and len(new_cover) < len(self.current_cover):
+            self.current_cover = deepcopy(new_cover)
+        if len(self.tabu_list) > self.max_qsize:
+            self.tabu_list.pop()
+        self.tabu_list.appendleft(set(new_cover.keys()))
+
+    def move_vertex(self, graph, v_from, v_to):
+        new_graph = deepcopy(graph)
+        new_graph.pop(v_from)
+        new_graph[v_to] = self.general_graph[v_to]
+        return new_graph
+
+    def check_move_possibility(self, v_from, v_to):
+        neighbours = set().union(*{x: y for x, y in self.general_graph.items() if x in self.general_graph[v_from]}.values())
+        for neighbour in neighbours:
+            if len(self.current_cover[neighbour]) <= 1:
+                if neighbour in self.general_graph[v_to]:
+                    new_cover = set(self.current_cover.keys())
+                    new_cover.remove(v_from)
+                    new_cover.add(v_to)
+                    if new_cover in self.tabu_list:
+                        return False
+                    else:
+                        return True
+                else:
+                    return False
+        new_cover = set(self.current_cover.keys())
+        new_cover.remove(v_from)
+        new_cover.add(v_to)
+        if new_cover in self.tabu_list:
+            return False
+        else:
+            return True
