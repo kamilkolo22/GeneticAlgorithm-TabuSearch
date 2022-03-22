@@ -1,10 +1,6 @@
 import random
 import time
-from queue import SimpleQueue
-from copy import deepcopy
 from collections import deque
-
-import numpy as np
 
 
 class Population:
@@ -17,6 +13,27 @@ class Population:
         self.cooperation_graph = cooperation_graph
         self.population_size = population_size
         self.best_group_weight = 0
+
+    def solve_problem(self):
+        time_start = time.time()
+        generation_number = 0
+        best_weight = 0
+        flag = 0
+        while True:
+            self.update_population(cross_p=1)
+            generation_number += 1
+            temp = self.best_group_weight
+            if flag == 20:
+                break
+            elif best_weight >= temp:
+                flag += 1
+            else:
+                best_weight = temp
+                flag = 0
+        print(f'Best group: {self.list[0]} \n'
+              f'Size: {self.list[0].group_size} \n'
+              f'Number of generation: {generation_number} \n'
+              f'Execution time: {time.time() - time_start}')
 
     def evaluate(self):
         """Ewaluacja wszystkich osobnikow w populacji"""
@@ -138,6 +155,7 @@ class City:
             cover = self.current_cover
         seen_vertexes = set().union(*{x: y for x, y in self.general_graph.items() if x in cover}.values())
         seen_vertexes = seen_vertexes.union(cover)
+        print(f'seen vertexes: {len(seen_vertexes)}, total: {self.number_vertexes}')
         return len(seen_vertexes) == self.number_vertexes
 
     def get_better_neighbour(self):
@@ -154,7 +172,6 @@ class City:
         # Resize listy tabu
         if len(self.tabu_list) > self.max_qsize:
             self.tabu_list.pop()
-
 
     def move_vertex(self, v_set, v_from, v_to):
         """Usunięcie wierzchołka lub przeniesienie wierzcholka z listy pokrycia"""
@@ -173,14 +190,22 @@ class City:
     def check_move_possibility(self, v_from, v_to):
         """Sprawdzamy czy dany ruch jest dopuszczalny, czyli czy dane rozwiązanie
         znajduje się na liście rozwiązań dopuszczalnych"""
-        # TODO: dodać sprawdzenie czy rozwiąznie jest na lisćie tabu!
         for neighbour in self.general_graph[v_from]:
             if self.how_many_looking[neighbour] <= 1:
                 if neighbour in self.general_graph[v_to]:
-                    return True
+                    return self.check_tabu_list(v_from, v_to)
                 else:
                     return False
-        return True
+        return self.check_tabu_list(v_from, v_to)
+
+    def check_tabu_list(self, v_from, v_to):
+        new_cover = self.current_cover.copy()
+        new_cover.remove(v_from)
+        new_cover.add(v_to)
+        if new_cover in self.tabu_list:
+            return False
+        else:
+            return True
 
     def random_cover(self):
         """Losowanie zbioru i dsotosowanie go tak aby był pokryciem wierzchołkowym"""
