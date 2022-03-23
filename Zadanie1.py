@@ -8,7 +8,8 @@ class Population:
         """Tworzymy populacje jako liste objektow Group"""
         self.available_id = set(cooperation_graph.keys())
         self.list = [Group(cooperation_graph=cooperation_graph,
-                           group_size=random.randint(1, len(self.available_id)))
+                           group_size=random.randint(1, len(self.available_id)),
+                           mutation_frequency=0.1)
                      for i in range(population_size)]
         self.cooperation_graph = cooperation_graph
         self.population_size = population_size
@@ -20,10 +21,12 @@ class Population:
         best_weight = 0
         flag = 0
         while True:
-            self.update_population(cross_p=1)
+            self.update_population(cross_p=0.5)
             generation_number += 1
-            temp = self.best_group_weight
-            if flag == 20:
+            # temp = self.best_group_weight
+            temp = sum([x.weight for x in self.list]) / len(self.list)
+            print(f'average weight: {temp}')
+            if flag == 3:
                 break
             elif best_weight >= temp:
                 flag += 1

@@ -8,20 +8,20 @@ def graph_from_edges(filename, directed=False, drop_rows=0):
                 continue
             words = line.split()
             if len(words) == 1:
-                add_vertex(graph, words[0])
+                add_vertex(graph, int(words[0]))
             elif len(words) == 2:
                 if directed:
-                    add_arc(graph, (words[0], words[1]))
+                    add_arc(graph, (int(words[0]), int(words[1])))
                 else:
-                    add_edge(graph, (words[0], words[1]))
+                    add_edge(graph, (int(words[0]), int(words[1])))
             elif len(words) >= 3:
                 if directed:
-                    add_arc(graph, (words[0], words[1]))
-                    graph[words[0]][-1] = (words[1], words[2])
+                    add_arc(graph, (int(words[0]), int(words[1])))
+                    graph[words[0]][-1] = (int(words[1]), int(words[2]))
                 else:
-                    add_edge(graph, (words[0], words[1]))
-                    graph[words[0]][-1] = (words[1], words[2])
-                    graph[words[1]][-1] = (words[0], words[2])
+                    add_edge(graph, (int(words[0]), int(words[1])))
+                    graph[words[0]][-1] = (int(words[1]), int(words[2]))
+                    graph[words[1]][-1] = (int(words[0]), int(words[2]))
     return graph
 
 
