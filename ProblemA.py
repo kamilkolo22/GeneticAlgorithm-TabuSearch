@@ -33,20 +33,15 @@ class Population:
                     break
             self.update_population(p_cross=p_cross, p_mutation=p_mutation)
             generation_number += 1
-            # liczymy srednia wartosc kazdej grupy, gdy nie zmienila sie 3 razy
-            # pod rzad to przerywamy program
+            # szacujemy
             temp = sum([x.weight for x in self.list]) / len(self.list)
             print(f'average weight: {temp}')
 
+        self.list[0].adjust_result(self.cooperation_graph)
         print(f'Best group: {self.list[0]} \n'
               f'Size: {self.list[0].group_size} \n'
               f'Number of generation: {generation_number} \n'
               f'Execution time: {time.time() - time_start}')
-
-    def evaluate(self):
-        """Ewaluacja wszystkich osobnikow w populacji"""
-        eval_list = [group.weight for group in self.list]
-        return eval_list
 
     def cross(self, parent1, parent2, p_mutation=0.1):
         """Krzyzowanie dwoch osobnikow"""
@@ -94,12 +89,7 @@ class Group:
         elif group_size is None:
             self.members = members
             self.group_size = len(members)
-            # seen_vertexes = set().union(
-            #     *{x: y for x, y in cooperation_graph.items() if
-            #       x in members}.values())
-            # seen_vertexes = seen_vertexes.union(members)
-            # print(len(seen_vertexes))
-            self.mutate(available_id - seen_vertexes, mutation_frequency)
+            self.mutate(available_id, mutation_frequency)
             self.weight = self.evaluate(cooperation_graph)
 
     def evaluate(self, cooperation):
@@ -111,14 +101,15 @@ class Group:
         #         if member1 in cooperation[member2] and member1 != member2:
         #             self.members.remove(member1) #wyrzucamy ludzi jesli ze soba pracowali
         #             break
+        weight = len(self.members)
         temp = {x: y for x, y in cooperation.items() if x in self.members}
         not_allowed = set().union(*temp.values())
         for m in not_allowed:
             if m in self.members:
-                self.members.remove(m)
+                weight -= 1
+                # self.members.remove(m)
 
-        weight = len(self.members)
-        self.group_size = weight
+        # self.group_size = weight
         return weight
 
     def mutate(self, available_id, p=0.1):
@@ -130,3 +121,14 @@ class Group:
         for x, y in zip(indexes, new_gens):
             temp[x] = y
         self.members = set(temp)
+
+    def adjust_result(self, cooperation):
+        temp_members = self.members.copy()
+        for member1 in temp_members:
+            for member2 in temp_members:
+                if member1 in cooperation[member2] and member1 != member2:
+                    self.members.remove(member1) #wyrzucamy ludzi jesli ze soba pracowali
+                    break
+        self.group_size = len(self.members)
+        self.weight = self.evaluate(cooperation)
+        return self.members

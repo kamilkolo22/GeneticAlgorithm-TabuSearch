@@ -46,7 +46,9 @@ def add_edge(graph, edge):
     add_vertex(graph, u)
     add_vertex(graph, v)
     if u == v:
-        raise ValueError("pętla!")
+        # raise ValueError("pętla!")
+        # print('uwaga pętla!')
+        return
     if v not in graph[u]:
         graph[u].append(v)
     if u not in graph[v]:

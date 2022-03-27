@@ -1,7 +1,7 @@
 import random
 
-@cython.boundscheck(False)
-@cython.wraparound(False)
+#@cython.boundscheck(False)
+#@cython.wraparound(False)
 
 
 class Group:
