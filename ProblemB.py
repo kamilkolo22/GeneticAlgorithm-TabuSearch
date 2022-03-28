@@ -26,7 +26,7 @@ class City:
             i += 1
             if (time.time() - time_start) > stop_time:  # warunek stopu
                 break
-        print(f'Number of interations: {i}')
+        # print(f'Number of interations: {i}')
         return self.current_cover
 
     def check_cover(self, cover=None):
