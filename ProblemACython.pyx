@@ -57,13 +57,26 @@ cdef class Group:
         self.members = set(temp)
 
     def adjust_result(self, cooperation):
-        temp_members = self.members.copy()
-        for member1 in temp_members:
-            for member2 in temp_members:
-                if member1 in cooperation[member2] and member1 != member2:
-                    self.members.remove(
-                        member1)  # wyrzucamy ludzi jesli ze soba pracowali
+        print(f'poczatkowa ilosc: {len(self.members)}')
+        temp_members = list(self.members.copy())
+        droped = 0
+        for i in range(len(temp_members)):
+            for j in range(i + 1, len(temp_members)):
+                if temp_members[i] in cooperation[temp_members[j]]:
+                    self.members.remove(temp_members[i])
+                    droped += 1
                     break
+        added = 0
+        for member1 in cooperation:
+            for member2 in self.members:
+                if member1 in cooperation[member2]:
+                    break
+            else:
+                if member1 not in self.members:
+                    self.members.add(member1)
+                    added += 1
+
+        print(f'usunieto: {droped}, dodane: {added}')
         self.group_size = len(self.members)
         self.weight = self.evaluate(cooperation)
         return self.members
@@ -108,7 +121,7 @@ cdef class Population:
             generation_number += 1
             # szacujemy
             temp = sum([x.weight for x in self.list]) / len(self.list)
-            print(f'average weight: {temp}')
+            # print(f'average weight: {temp}')
 
         self.list[0].adjust_result(self.cooperation_graph)
         print(f'Size: {self.list[0].group_size} \n'
@@ -119,31 +132,47 @@ cdef class Population:
     cdef Group cross(self, parent1, parent2, p_mutation=0.1):
         """Krzyzowanie dwoch osobnikow"""
         cdef set set1, set2;
+        cdef int s1, s2;
+        cdef float w1, w2;
         cdef Group child;
 
-        set1 = set(random.sample(parent1.members, int(parent1.group_size / 2)))
-        set2 = set(random.sample(parent2.members, int(parent2.group_size / 2)))
+        w1 = parent1.weight
+        w2 = parent2.weight
+        s1 = parent1.group_size
+        s2 = parent2.group_size
+
+        set1 = set(random.sample(parent1.members, int(s1 * w1 / (w1 + w2))))
+        set2 = set(random.sample(parent2.members, int(s2 * w2 / (w1 + w2))))
         child = Group(self.cooperation_graph,
                       members=set.union(set1, set2),
                       mutation_frequency=p_mutation)
         return child
 
-    def cross_all(self, p_cross=1.0, p_mutation=0.1):
+    cdef list cross_all(self, float p_cross=1.0, float p_mutation=0.1):
         """Skrzyzowanie wszystkich osobnikow"""
+        cdef list to_cross, children;
+        cdef int N, i, j;
+
         random.shuffle(self.list)
         to_cross = self.list[:int(len(self.list) * p_cross)]
         N = len(to_cross)
         children = []
         if N % 2 == 0:
-            for parent1, parent2 in zip(to_cross[:int(N/2)], to_cross[int(N/2):]):
-                children.append(self.cross(parent1, parent2, p_mutation))
+            j = int(N/2)
+            for i in range(j):
+                children.append(
+                    self.cross(to_cross[i], to_cross[j+i], p_mutation))
         else:
-            for parent1, parent2 in zip(to_cross[:int((N-1)/2)], to_cross[int((N-1)/2):-1]):
-                children.append(self.cross(parent1, parent2, p_mutation))
+            j = int((N-1)/2)
+            for i in range(j):
+                children.append(
+                    self.cross(to_cross[i], to_cross[j + i], p_mutation))
         return children
 
-    def update_population(self, p_cross=1.0, p_mutation=0.1):
+    def update_population(self, float p_cross=1.0, float p_mutation=0.1):
         """Wykonujemy iteracje, czyli rozmnzazamy i ewaloujemy nasza populacje"""
+        cdef list kids, new_population;
+
         kids = self.cross_all(p_cross, p_mutation)
         new_population = self.list + kids
         new_population.sort(key=lambda x: x.weight, reverse=True)

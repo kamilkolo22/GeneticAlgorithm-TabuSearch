@@ -35,18 +35,23 @@ class Population:
             generation_number += 1
             # szacujemy
             temp = sum([x.weight for x in self.list]) / len(self.list)
-            print(f'average weight: {temp}')
+            # print(f'average weight: {temp}')
 
         self.list[0].adjust_result(self.cooperation_graph)
-        print(f'Size: {self.list[0].group_size} \n'
+        print(f'Size: {self.list[0].group_size}, Weight: {self.list[0].weight} \n'
               f'Number of generation: {generation_number} \n'
               f'Execution time: {time.time() - time_start}\n'
               f'Best group: \n{self.list[0].members} \n')
 
     def cross(self, parent1, parent2, p_mutation=0.1):
         """Krzyzowanie dwoch osobnikow"""
-        set1 = set(random.sample(parent1.members, int(parent1.group_size / 2)))
-        set2 = set(random.sample(parent2.members, int(parent2.group_size / 2)))
+        w1 = parent1.weight
+        w2 = parent2.weight
+        s1 = parent1.group_size
+        s2 = parent2.group_size
+
+        set1 = set(random.sample(parent1.members, int(s1 * w1 / (w1 + w2))))
+        set2 = set(random.sample(parent2.members, int(s2 * w2 / (w1 + w2))))
         child = Group(self.cooperation_graph,
                       members=set.union(set1, set2),
                       mutation_frequency=p_mutation)
@@ -115,12 +120,32 @@ class Group:
         self.members = set(temp)
 
     def adjust_result(self, cooperation):
-        temp_members = self.members.copy()
-        for member1 in temp_members:
-            for member2 in temp_members:
-                if member1 in cooperation[member2] and member1 != member2:
-                    self.members.remove(member1)  # wyrzucamy ludzi jesli ze soba pracowali
+        # temp_members = self.members.copy()
+        # for member1 in temp_members:
+        #     for member2 in temp_members:
+        #         if member1 in cooperation[member2] and member1 != member2:
+        #             self.members.remove(member1)  # wyrzucamy ludzi jesli ze soba pracowali
+        #             break
+        print(f'poczatkowa ilosc: {len(self.members)}')
+        temp_members = list(self.members.copy())
+        droped = 0
+        for i in range(len(temp_members)):
+            for j in range(i+1, len(temp_members)):
+                if temp_members[i] in cooperation[temp_members[j]]:
+                    self.members.remove(temp_members[i])
+                    droped += 1
                     break
+        added = 0
+        for member1 in cooperation:
+            for member2 in self.members:
+                if member1 in cooperation[member2]:
+                    break
+            else:
+                if member1 not in self.members:
+                    self.members.add(member1)
+                    added += 1
+
+        print(f'usunieto: {droped}, dodane: {added}')
         self.group_size = len(self.members)
         self.weight = self.evaluate(cooperation)
         return self.members
