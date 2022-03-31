@@ -16,17 +16,17 @@ class Population:
     def solve_problem(self, p_cross=0.5, p_mutation=0.1, time_limit=None):
         time_start = time.time()
         generation_number = 0
-        best_weight = 0
+        average_weight = 0
         temp = 1
         flag = 0
         while True:
             if time_limit is None:
                 if flag == 5:
                     break
-                elif best_weight >= temp:
+                elif average_weight >= temp:
                     flag += 1
                 else:
-                    best_weight = temp
+                    average_weight = temp
                     flag = 0
             else:
                 if (time.time() - time_start) > time_limit:
@@ -120,12 +120,6 @@ class Group:
         self.members = set(temp)
 
     def adjust_result(self, cooperation):
-        # temp_members = self.members.copy()
-        # for member1 in temp_members:
-        #     for member2 in temp_members:
-        #         if member1 in cooperation[member2] and member1 != member2:
-        #             self.members.remove(member1)  # wyrzucamy ludzi jesli ze soba pracowali
-        #             break
         print(f'poczatkowa ilosc: {len(self.members)}')
         temp_members = list(self.members.copy())
         droped = 0
