@@ -42,6 +42,7 @@ class Population:
               f'Number of generation: {generation_number} \n'
               f'Execution time: {time.time() - time_start}\n'
               f'Best group: \n{self.list[0].members} \n')
+        return self.list[0].members
 
     def cross(self, parent1, parent2, p_mutation=0.1):
         """Krzyzowanie dwoch osobnikow"""

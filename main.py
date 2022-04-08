@@ -12,7 +12,7 @@ if __name__ == '__main__':
     population = Population(population_size=1000,
                             cooperation_graph=graph)
     population.solve_problem(p_cross=1,
-                             p_mutation=0.01, time_limit=900)
+                             p_mutation=0.01, time_limit=10)
 
     graph = graph_from_edges('data/roadNet_USRoads.txt', drop_rows=16)
     city = City(graph, 1e10)
